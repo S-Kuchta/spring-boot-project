@@ -179,9 +179,11 @@ public class IntegrationTests {
                 httpEntity,
                 Amount.class
         );
+
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Assertions.assertNotNull(responseEntity.getBody());
         Assertions.assertEquals(product.getAmount() + amount.getAmount(), responseEntity.getBody().getAmount());
+
     }
 
     @Test
