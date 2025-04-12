@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity(name = "product")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,14 +35,16 @@ public class Product {
     @Setter
     private long amount;
 
-    @Column(name = "order_item_id")
-    private Long OrderItemId;
+    //    @Column(name = "order_item_id")
+//    private Long OrderItemId;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> orderItemList;
 
     public Product(String name, String description, long amount, double price) {
         this.name = name;
         this.description = description;
         this.amount = amount;
         this.price = price;
-        this.OrderItemId = null;
+        this.orderItemList = new ArrayList<>();
     }
 }
