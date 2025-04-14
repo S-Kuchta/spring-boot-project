@@ -29,7 +29,7 @@ public class ProductController {
 
     @GetMapping("{id}")
     public ResponseEntity<ProductResponse> getById(@PathVariable("id") long id) {
-        return ResponseEntity.ok(productService.get(id));
+        return ResponseEntity.ok(productService.getById(id));
     }
 
     @PostMapping
@@ -43,7 +43,7 @@ public class ProductController {
             @RequestBody ProductEditRequest product
     ) {
         productService.edit(id, product);
-        return ResponseEntity.ok().body(productService.get(id));
+        return ResponseEntity.ok().body(productService.getById(id));
     }
 
     @PostMapping("{id}/amount")
@@ -62,7 +62,7 @@ public class ProductController {
 
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable("id") long id) {
         productService.delete(id);
 //        return ResponseEntity.ok().body(productService.get(id));
         return ResponseEntity.ok().build();

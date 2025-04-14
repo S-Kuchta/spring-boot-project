@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ProductService {
 
-    ProductResponse get(long id);
+    ProductResponse getById(long id);
 
     List<ProductResponse> getAll();
 

@@ -2,9 +2,7 @@ package sk.streetofcode.productordermanagement.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sk.streetofcode.productordermanagement.api.OrderService;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
 
@@ -21,5 +19,16 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponse> save() {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.save());
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<OrderResponse> findById(@PathVariable long id) {
+        return ResponseEntity.ok(orderService.getById(id));
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<OrderResponse> deleteById(@PathVariable long id) {
+        orderService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }

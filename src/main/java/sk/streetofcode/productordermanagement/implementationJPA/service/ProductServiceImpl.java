@@ -27,7 +27,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse get(long id) {
+    public ProductResponse getById(long id) {
         return productRepository
                 .findById(id)
                 .map(this::mapProductToProductResponse)

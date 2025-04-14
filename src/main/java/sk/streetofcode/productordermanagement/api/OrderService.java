@@ -7,7 +7,7 @@ public interface OrderService {
 
     OrderResponse save();
     OrderResponse getById(long id);
-    void delete();
+    void deleteById(long id);
     OrderItemAddResponse addItem(long productId, long amount);
 
 }

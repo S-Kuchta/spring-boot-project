@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import sk.streetofcode.productordermanagement.api.OrderService;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
+import sk.streetofcode.productordermanagement.api.exception.ResourceNotFoundException;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Order;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderRepository;
 
@@ -29,7 +30,7 @@ public class OrderServiceImpl implements OrderService {
             final Order newOrder = orderRepository.save(new Order(new ArrayList<>()));
 
 
-            return mapProductToProductResponse(newOrder.getId(), newOrder);
+            return mapProductToProductResponse(newOrder);
         } catch (DataAccessException e) {
             logger.error("Error while saving order", e);
             throw new InternalError();
@@ -38,12 +39,25 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getById(long id) {
-        return null;
+        return orderRepository
+                .findById(id)
+                .map(this::mapProductToProductResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
     }
 
     @Override
-    public void delete() {
+    public void deleteById(long id) {
+        if (orderExists(id)) {
+            orderRepository.deleteById(id);
+        }
+    }
 
+    public boolean orderExists(long id) {
+        if (orderRepository.existsById(id)) {
+            return true;
+        } else {
+            throw new ResourceNotFoundException("Order with id " + id + " not found");
+        }
     }
 
     @Override
@@ -51,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
-    private OrderResponse mapProductToProductResponse(long productId, Order order) {
+    private OrderResponse mapProductToProductResponse(Order order) {
         return new OrderResponse(
                 order.getId(),
                 order.getShoppingList(),
