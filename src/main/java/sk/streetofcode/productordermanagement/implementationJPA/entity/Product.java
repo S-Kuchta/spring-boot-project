@@ -35,9 +35,7 @@ public class Product {
     @Setter
     private long amount;
 
-    //    @Column(name = "order_item_id")
-//    private Long OrderItemId;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "productId", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<OrderItem> orderItemList;
 
     public Product(String name, String description, long amount, double price) {
@@ -45,6 +43,5 @@ public class Product {
         this.description = description;
         this.amount = amount;
         this.price = price;
-        this.orderItemList = new ArrayList<>();
     }
 }

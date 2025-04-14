@@ -14,13 +14,16 @@ import java.util.List;
 public class Order {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderItem> orderItems;
+    @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> shoppingList;
 
     @Column(nullable = false)
     private boolean paid;
 
-
+    public Order(List<OrderItem> shoppingList) {
+        this.shoppingList = shoppingList;
+    }
 }

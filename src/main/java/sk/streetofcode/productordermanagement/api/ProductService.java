@@ -1,11 +1,11 @@
 package sk.streetofcode.productordermanagement.api;
 
 
-import sk.streetofcode.productordermanagement.api.dto.request.ProductAddRequest;
-import sk.streetofcode.productordermanagement.api.dto.request.ProductEditRequest;
-import sk.streetofcode.productordermanagement.api.dto.request.ProductAmountRequest;
-import sk.streetofcode.productordermanagement.api.dto.response.ProductAmountResponse;
-import sk.streetofcode.productordermanagement.api.dto.response.ProductResponse;
+import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAddRequest;
+import sk.streetofcode.productordermanagement.api.dto.request.product.ProductEditRequest;
+import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAmountRequest;
+import sk.streetofcode.productordermanagement.api.dto.response.product.ProductAmountResponse;
+import sk.streetofcode.productordermanagement.api.dto.response.product.ProductResponse;
 
 import java.util.List;
 
