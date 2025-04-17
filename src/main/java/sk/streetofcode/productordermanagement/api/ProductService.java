@@ -6,12 +6,14 @@ import sk.streetofcode.productordermanagement.api.dto.request.product.ProductEdi
 import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAmountRequest;
 import sk.streetofcode.productordermanagement.api.dto.response.product.ProductAmountResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.product.ProductResponse;
+import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
 
 import java.util.List;
 
 public interface ProductService {
 
     ProductResponse getById(long id);
+    Product getByIdInternal(long id);
 
     List<ProductResponse> getAll();
 
@@ -26,4 +28,6 @@ public interface ProductService {
     ProductAmountResponse updateAmount(long id, ProductAmountRequest amount);
 
     ProductAmountResponse getAmount(long id);
+
+    boolean checkAmountNeeded(long id, long amount);
 }

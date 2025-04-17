@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sk.streetofcode.productordermanagement.api.OrderService;
+import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
+import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
 
 @RestController
@@ -30,5 +32,10 @@ public class OrderController {
     public ResponseEntity<OrderResponse> deleteById(@PathVariable long id) {
         orderService.deleteById(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("{orderId}")
+    public ResponseEntity<OrderItemAddResponse> addItem(@PathVariable long orderId, @RequestBody OrderAddRequest orderAddRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.addItem(orderId, orderAddRequest));
     }
 }

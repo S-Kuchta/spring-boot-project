@@ -15,19 +15,18 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "order", nullable = false)
-//    private Order order;
-
-    @Column
+    @JoinColumn(name = "shoppingList")
     private long orderId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "product", nullable = false)
-    @Column
+    @JoinColumn(name = "productInShoppingList")
     private long productId;
 
-    @Column
-    private int amount;
+    @Column(nullable = false)
+    private long amount;
 
+    public OrderItem(long orderId, long productId, long amount) {
+        this.orderId = orderId;
+        this.productId = productId;
+        this.amount = amount;
+    }
 }
