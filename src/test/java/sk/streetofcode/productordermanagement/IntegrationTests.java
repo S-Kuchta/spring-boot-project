@@ -344,7 +344,7 @@ public class IntegrationTests {
         Assertions.assertEquals(updatedOrder.getShoppingList().get(0).getProductId(), product.getId());
         Assertions.assertEquals(updatedOrder.getShoppingList().get(0).getAmount(), 5);
         final TestOrderResponse updatedOrder2 = addProductToOrderInternal(order.getId(), product.getId(), 5, HttpStatus.OK);
-        Assertions.assertEquals(updatedOrder2.getShoppingList().size(), 1);
+        Assertions.assertEquals(1, updatedOrder2.getShoppingList().size());
         Assertions.assertEquals(updatedOrder2.getShoppingList().get(0).getProductId(), product.getId());
         Assertions.assertEquals(updatedOrder2.getShoppingList().get(0).getAmount(), 10);
     }

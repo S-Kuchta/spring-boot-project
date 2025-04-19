@@ -10,7 +10,7 @@ import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAmo
 import sk.streetofcode.productordermanagement.api.dto.request.product.ProductEditRequest;
 import sk.streetofcode.productordermanagement.api.dto.response.product.ProductAmountResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.product.ProductResponse;
-import sk.streetofcode.productordermanagement.api.exception.NotEnoughProductOnStock;
+import sk.streetofcode.productordermanagement.api.exception.BadRequestException;
 import sk.streetofcode.productordermanagement.api.exception.ResourceNotFoundException;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.ProductRepository;
@@ -91,13 +91,13 @@ public class ProductServiceImpl implements ProductService {
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
 
-        final ProductAmountResponse response = new ProductAmountResponse();
-        long newAmount = amount.getAmount() + product.getAmount();
+//        final ProductAmountResponse response = new ProductAmountResponse();
+        final long newAmount = amount.getAmount() + product.getAmount();
         product.setAmount(newAmount);
-        response.setAmount(newAmount);
+//        response.setAmount(newAmount);
 
         productRepository.save(product);
-        return response;
+        return new ProductAmountResponse(newAmount);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ProductServiceImpl implements ProductService {
         if (amountNeeded <= product.getAmount()) {
             return true;
         } else {
-            throw new NotEnoughProductOnStock("Not enough product on stock");
+            throw new BadRequestException("Not enough product on stock");
         }
     }
 

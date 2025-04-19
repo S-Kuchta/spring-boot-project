@@ -3,7 +3,6 @@ package sk.streetofcode.productordermanagement.implementationJPA.service;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import sk.streetofcode.productordermanagement.api.OrderItemService;
-import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.OrderItem;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderItemRepository;
@@ -15,6 +14,13 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     public OrderItemServiceImpl(OrderItemRepository orderItemRepository) {
         this.orderItemRepository = orderItemRepository;
+    }
+
+    @Override
+    public OrderItem getByIdInternal(Long orderItemId) {
+        return orderItemRepository
+                .findById(orderItemId)
+                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
     }
 
     @Override
@@ -35,5 +41,10 @@ public class OrderItemServiceImpl implements OrderItemService {
         } catch (DataAccessException e) {
             throw new InternalError();
         }
+    }
+
+    @Override
+    public boolean containsProductId(OrderItem orderItem, Long productId) {
+        return orderItem.getProduct().getId() == productId;
     }
 }

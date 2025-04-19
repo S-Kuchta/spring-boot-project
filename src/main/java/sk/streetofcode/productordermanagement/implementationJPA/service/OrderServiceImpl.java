@@ -10,13 +10,14 @@ import sk.streetofcode.productordermanagement.api.OrderService;
 import sk.streetofcode.productordermanagement.api.ProductService;
 import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
 import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAmountRequest;
-import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.order.ShoppingListItemResponse;
+import sk.streetofcode.productordermanagement.api.exception.BadRequestException;
 import sk.streetofcode.productordermanagement.api.exception.ResourceNotFoundException;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Order;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.OrderItem;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
+import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderItemRepository;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderRepository;
 
 import java.util.List;
@@ -24,16 +25,17 @@ import java.util.List;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
     private final ProductService productService;
     private final OrderItemService orderItemService;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
-    public OrderServiceImpl(OrderRepository repository, ProductService productService, OrderItemService orderItemService) {
+    public OrderServiceImpl(OrderRepository repository, OrderItemRepository orderItemRepository, ProductService productService, OrderItemService orderItemService) {
         this.orderRepository = repository;
+        this.orderItemRepository = orderItemRepository;
         this.productService = productService;
         this.orderItemService = orderItemService;
     }
@@ -81,30 +83,47 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse addItem(Long orderId, OrderAddRequest orderAddRequest) {
 
-//        Order order;
-//        if (orderId == null) {
-//            order = orderRepository.save(new Order());
-//        } else {
-//            order = getByIdInternal(orderId);
-//        }
-
         final long productId = orderAddRequest.getProductId();
-        final long amount = orderAddRequest.getAmount();
+        long amount = orderAddRequest.getAmount();
+
+        final Order order = getByIdInternal(orderId);
+        if (order.isPaid()) {
+            throw new BadRequestException("Order with id " + orderId + " is already paid");
+        }
 
         final Product product = productService.getByIdInternal(productId);
-        final Order order = getByIdInternal(orderId);
         final OrderItem orderItem = new OrderItem(order, product, amount);
 
         if (productService.checkAmountNeeded(productId, amount)) {
             productService.updateAmount(productId, new ProductAmountRequest(-Math.abs(amount)));
             orderItemService.save(orderItem);
 
-//            return new OrderItemAddResponse(productId, amount);
             return mapProductToProductResponse(order);
         }
 
         // Can't reach, exception will be thrown earlier
         return null;
+    }
+
+    @Override
+    public String payOrder(Long orderId) {
+        Order order = getByIdInternal(orderId);
+
+        double sum = 0;
+        for (OrderItem orderItem : order.getShoppingList()) {
+            double price = orderItem.getProduct().getPrice();
+            double amount = orderItem.getAmount();
+            sum = sum + (price * amount);
+        }
+
+        if (!order.isPaid()) {
+            order.setPaid(true);
+            orderRepository.save(order);
+        } else {
+            throw new BadRequestException("Order with id " + orderId + " already paid");
+        }
+
+        return String.format("%.1f", sum);
     }
 
     private OrderResponse mapProductToProductResponse(Order order) {

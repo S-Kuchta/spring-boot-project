@@ -38,4 +38,9 @@ public class OrderController {
     public ResponseEntity<OrderResponse> addItem(@PathVariable Long orderId, @RequestBody OrderAddRequest orderAddRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.addItem(orderId, orderAddRequest));
     }
+
+    @PostMapping("{orderId}/pay")
+    public ResponseEntity<String> payOrder(@PathVariable Long orderId) {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.payOrder(orderId));
+    }
 }

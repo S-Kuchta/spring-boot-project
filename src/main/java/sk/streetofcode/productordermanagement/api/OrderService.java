@@ -1,7 +1,6 @@
 package sk.streetofcode.productordermanagement.api;
 
 import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
-import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Order;
 
@@ -16,5 +15,7 @@ public interface OrderService {
     void deleteById(long id);
 
     OrderResponse addItem(Long orderId, OrderAddRequest orderAddRequest);
+
+    String payOrder(Long orderId);
 
 }
