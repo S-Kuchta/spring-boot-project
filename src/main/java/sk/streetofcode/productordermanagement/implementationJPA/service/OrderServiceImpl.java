@@ -1,5 +1,6 @@
 package sk.streetofcode.productordermanagement.implementationJPA.service;
 
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import sk.streetofcode.productordermanagement.api.OrderItemService;
 import sk.streetofcode.productordermanagement.api.OrderService;
 import sk.streetofcode.productordermanagement.api.ProductService;
+import sk.streetofcode.productordermanagement.api.dto.response.order.ShoppingListItemResponse;
 import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
 import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAmountRequest;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
@@ -14,9 +16,11 @@ import sk.streetofcode.productordermanagement.api.dto.response.order.OrderRespon
 import sk.streetofcode.productordermanagement.api.exception.ResourceNotFoundException;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Order;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.OrderItem;
+import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -38,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse save() {
         try {
-            final Order newOrder = orderRepository.save(new Order(new ArrayList<>()));
+            final Order newOrder = orderRepository.save(new Order());
 
             return mapProductToProductResponse(newOrder);
         } catch (DataAccessException e) {
@@ -75,29 +79,42 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderItemAddResponse addItem(long orderId, OrderAddRequest orderAddRequest) {
 
         final long productId = orderAddRequest.getProductId();
         final long amount = orderAddRequest.getAmount();
 
-//        final Product product = productService.getByIdInternal(productId);
+        final Product product = productService.getByIdInternal(productId);
         final Order order = getByIdInternal(orderId);
+        final OrderItem orderItem = new OrderItem(order, product, amount);
 
         if (productService.checkAmountNeeded(productId, amount)) {
             productService.updateAmount(productId, new ProductAmountRequest(-Math.abs(amount)));
-            orderItemService.addOrderItem(orderId, new OrderAddRequest(productId, amount));
-            order.getShoppingList().add(new OrderItem(orderId, productId, amount));
+            orderItemService.save(orderItem);
+
             return new OrderItemAddResponse(productId, amount);
         }
 
+        // Can't reach, exception will be thrown earlier
         return null;
     }
 
     private OrderResponse mapProductToProductResponse(Order order) {
         return new OrderResponse(
                 order.getId(),
-                order.getShoppingList(),
+                mapOrderItemsToShoppingListResponse(order.getShoppingList()),
                 order.isPaid()
         );
+    }
+
+    private List<ShoppingListItemResponse> mapOrderItemsToShoppingListResponse(List<OrderItem> orderItems) {
+        final List<ShoppingListItemResponse> shoppingListItemResponses = new ArrayList<>();
+
+        for (OrderItem orderItem : orderItems) {
+            shoppingListItemResponses.add(new ShoppingListItemResponse(orderItem.getProduct().getId(), orderItem.getAmount()));
+        }
+
+        return shoppingListItemResponses;
     }
 }

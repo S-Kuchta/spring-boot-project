@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "order")
@@ -17,13 +18,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderItem> shoppingList;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> shoppingList = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean paid;
 
-    public Order(List<OrderItem> shoppingList) {
-        this.shoppingList = shoppingList;
-    }
 }

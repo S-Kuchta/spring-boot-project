@@ -4,13 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderResponse {
-    private long id;
-    private List<ShoppingListItemResponse> shoppingList;
-    private boolean paid;
+public class ShoppingListItemResponse {
+    private long productId;
+    private long amount;
 }

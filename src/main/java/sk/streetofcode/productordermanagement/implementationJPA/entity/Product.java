@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "product")
@@ -34,8 +35,8 @@ public class Product {
     @Setter
     private long amount;
 
-    @OneToMany(mappedBy = "productId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderItem> productInShoppingList;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> productInShoppingList = new ArrayList<>();
 
     public Product(String name, String description, long amount, double price) {
         this.name = name;

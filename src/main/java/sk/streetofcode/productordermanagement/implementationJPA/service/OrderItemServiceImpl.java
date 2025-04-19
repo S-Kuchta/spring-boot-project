@@ -18,14 +18,14 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     @Override
-    public OrderItemAddResponse addOrderItem(long orderId, OrderAddRequest orderAddRequest) {
+    public OrderItemAddResponse save(OrderItem orderItem) {
 
         try {
             final OrderItem orderItemSaved =
                     orderItemRepository.save(new OrderItem(
-                            orderId,
-                            orderAddRequest.getProductId(),
-                            orderAddRequest.getAmount()
+                            orderItem.getOrder(),
+                            orderItem.getProduct(),
+                            orderItem.getAmount()
                     ));
 
             return new OrderItemAddResponse(
