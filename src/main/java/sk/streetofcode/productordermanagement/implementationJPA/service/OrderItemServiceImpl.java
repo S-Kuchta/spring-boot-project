@@ -4,7 +4,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import sk.streetofcode.productordermanagement.api.OrderItemService;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
+import sk.streetofcode.productordermanagement.implementationJPA.entity.Order;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.OrderItem;
+import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderItemRepository;
 
 @Service
@@ -27,12 +29,14 @@ public class OrderItemServiceImpl implements OrderItemService {
     public OrderItemAddResponse save(OrderItem orderItem) {
 
         try {
-            final OrderItem orderItemSaved =
-                    orderItemRepository.save(new OrderItem(
-                            orderItem.getOrder(),
-                            orderItem.getProduct(),
-                            orderItem.getAmount()
-                    ));
+            final OrderItem orderItemSaved = orderItemRepository.save(orderItem);
+
+//            final OrderItem orderItemSaved =
+//                    orderItemRepository.save(new OrderItem(
+//                            orderItem.getOrder(),
+//                            orderItem.getProduct(),
+//                            orderItem.getAmount()
+//                    ));
 
             return new OrderItemAddResponse(
                     orderItemSaved.getId(),
@@ -44,7 +48,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     @Override
-    public boolean containsProductId(OrderItem orderItem, Long productId) {
-        return orderItem.getProduct().getId() == productId;
+    public OrderItem getByProductAndOrder(Product product, Order order) {
+        return orderItemRepository.findByProductAndOrder(product, order);
     }
 }

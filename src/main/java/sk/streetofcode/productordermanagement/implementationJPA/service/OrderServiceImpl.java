@@ -1,6 +1,6 @@
 package sk.streetofcode.productordermanagement.implementationJPA.service;
 
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -26,16 +26,14 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
 
     private final ProductService productService;
     private final OrderItemService orderItemService;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
-    public OrderServiceImpl(OrderRepository repository, OrderItemRepository orderItemRepository, ProductService productService, OrderItemService orderItemService) {
+    public OrderServiceImpl(OrderRepository repository, ProductService productService, OrderItemService orderItemService) {
         this.orderRepository = repository;
-        this.orderItemRepository = orderItemRepository;
         this.productService = productService;
         this.orderItemService = orderItemService;
     }
@@ -66,21 +64,22 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void deleteById(long id) {
-        if (orderExists(id)) {
+        final Order order = getByIdInternal(id);
+        if (order != null) {
+            if (order.isPaid()) {
+                throw new BadRequestException("Paid order can not be deleted.");
+            }
+
+            order.getShoppingList()
+                    .forEach(orderItem -> orderItem.getProduct()
+                            .setAmount(orderItem.getProduct().getAmount() + orderItem.getAmount())
+                    );
+
             orderRepository.deleteById(id);
         }
     }
 
-    public boolean orderExists(long id) {
-        if (orderRepository.existsById(id)) {
-            return true;
-        } else {
-            throw new ResourceNotFoundException("Order with id " + id + " not found");
-        }
-    }
-
     @Override
-    @Transactional
     public OrderResponse addItem(Long orderId, OrderAddRequest orderAddRequest) {
 
         final long productId = orderAddRequest.getProductId();
@@ -92,17 +91,19 @@ public class OrderServiceImpl implements OrderService {
         }
 
         final Product product = productService.getByIdInternal(productId);
-        final OrderItem orderItem = new OrderItem(order, product, amount);
+        OrderItem orderItem = orderItemService.getByProductAndOrder(product, order);
+        if (orderItem != null) {
+            orderItem.setAmount(orderItem.getAmount() + amount);
+        } else {
+            orderItem = new OrderItem(order, product, amount);
+        }
 
         if (productService.checkAmountNeeded(productId, amount)) {
             productService.updateAmount(productId, new ProductAmountRequest(-Math.abs(amount)));
             orderItemService.save(orderItem);
-
-            return mapProductToProductResponse(order);
         }
 
-        // Can't reach, exception will be thrown earlier
-        return null;
+        return mapProductToProductResponse(order);
     }
 
     @Override
