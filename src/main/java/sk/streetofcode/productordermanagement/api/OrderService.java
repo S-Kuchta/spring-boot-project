@@ -15,6 +15,6 @@ public interface OrderService {
 
     void deleteById(long id);
 
-    OrderItemAddResponse addItem(long id, OrderAddRequest orderAddRequest);
+    OrderResponse addItem(Long orderId, OrderAddRequest orderAddRequest);
 
 }

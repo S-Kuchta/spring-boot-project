@@ -8,18 +8,17 @@ import org.springframework.stereotype.Service;
 import sk.streetofcode.productordermanagement.api.OrderItemService;
 import sk.streetofcode.productordermanagement.api.OrderService;
 import sk.streetofcode.productordermanagement.api.ProductService;
-import sk.streetofcode.productordermanagement.api.dto.response.order.ShoppingListItemResponse;
 import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
 import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAmountRequest;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
+import sk.streetofcode.productordermanagement.api.dto.response.order.ShoppingListItemResponse;
 import sk.streetofcode.productordermanagement.api.exception.ResourceNotFoundException;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Order;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.OrderItem;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -80,7 +79,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderItemAddResponse addItem(long orderId, OrderAddRequest orderAddRequest) {
+    public OrderResponse addItem(Long orderId, OrderAddRequest orderAddRequest) {
+
+//        Order order;
+//        if (orderId == null) {
+//            order = orderRepository.save(new Order());
+//        } else {
+//            order = getByIdInternal(orderId);
+//        }
 
         final long productId = orderAddRequest.getProductId();
         final long amount = orderAddRequest.getAmount();
@@ -93,7 +99,8 @@ public class OrderServiceImpl implements OrderService {
             productService.updateAmount(productId, new ProductAmountRequest(-Math.abs(amount)));
             orderItemService.save(orderItem);
 
-            return new OrderItemAddResponse(productId, amount);
+//            return new OrderItemAddResponse(productId, amount);
+            return mapProductToProductResponse(order);
         }
 
         // Can't reach, exception will be thrown earlier
@@ -109,12 +116,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private List<ShoppingListItemResponse> mapOrderItemsToShoppingListResponse(List<OrderItem> orderItems) {
-        final List<ShoppingListItemResponse> shoppingListItemResponses = new ArrayList<>();
-
-        for (OrderItem orderItem : orderItems) {
-            shoppingListItemResponses.add(new ShoppingListItemResponse(orderItem.getProduct().getId(), orderItem.getAmount()));
-        }
-
-        return shoppingListItemResponses;
+        return orderItems
+                .stream()
+                .map(orderItem -> new ShoppingListItemResponse(
+                        orderItem.getProduct().getId(),
+                        orderItem.getAmount()))
+                .toList();
     }
 }

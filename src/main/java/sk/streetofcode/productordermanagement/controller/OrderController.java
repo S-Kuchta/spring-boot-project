@@ -35,7 +35,7 @@ public class OrderController {
     }
 
     @PostMapping("{orderId}/add")
-    public ResponseEntity<OrderItemAddResponse> addItem(@PathVariable long orderId, @RequestBody OrderAddRequest orderAddRequest) {
+    public ResponseEntity<OrderResponse> addItem(@PathVariable Long orderId, @RequestBody OrderAddRequest orderAddRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.addItem(orderId, orderAddRequest));
     }
 }
