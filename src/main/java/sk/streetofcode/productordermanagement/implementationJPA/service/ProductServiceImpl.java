@@ -11,6 +11,7 @@ import sk.streetofcode.productordermanagement.api.dto.request.product.ProductEdi
 import sk.streetofcode.productordermanagement.api.dto.response.product.ProductAmountResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.product.ProductResponse;
 import sk.streetofcode.productordermanagement.api.exception.BadRequestException;
+import sk.streetofcode.productordermanagement.api.exception.InternalErrorException;
 import sk.streetofcode.productordermanagement.api.exception.ResourceNotFoundException;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.ProductRepository;
@@ -36,7 +37,7 @@ public class ProductServiceImpl implements ProductService {
     public Product getByIdInternal(long id) {
         return productRepository
                 .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
     }
 
     @Override
@@ -57,10 +58,14 @@ public class ProductServiceImpl implements ProductService {
                     product.getPrice()
             ));
 
-            return mapProductToProductResponse(newProduct.getId(), product);
+            return new ProductResponse(newProduct.getId(),
+                    newProduct.getName(),
+                    newProduct.getDescription(),
+                    newProduct.getAmount(),
+                    newProduct.getPrice());
         } catch (DataAccessException e) {
-            logger.error("Error while saving product", e);
-            throw new InternalError();
+            logger.error("Error while saving Product", e);
+            throw new InternalErrorException("Error while saving Product");
         }
     }
 
@@ -91,10 +96,8 @@ public class ProductServiceImpl implements ProductService {
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
 
-//        final ProductAmountResponse response = new ProductAmountResponse();
         final long newAmount = amount.getAmount() + product.getAmount();
         product.setAmount(newAmount);
-//        response.setAmount(newAmount);
 
         productRepository.save(product);
         return new ProductAmountResponse(newAmount);
@@ -135,16 +138,6 @@ public class ProductServiceImpl implements ProductService {
     private ProductResponse mapProductToProductResponse(Product product) {
         return new ProductResponse(
                 product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getAmount(),
-                product.getPrice()
-        );
-    }
-
-    private ProductResponse mapProductToProductResponse(long id, ProductAddRequest product) {
-        return new ProductResponse(
-                id,
                 product.getName(),
                 product.getDescription(),
                 product.getAmount(),

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderAddRequest {
+public class AddItemToShoppingList {
     long productId;
     long amount;
 }
