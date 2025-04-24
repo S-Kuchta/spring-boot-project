@@ -1,5 +1,6 @@
 package sk.streetofcode.productordermanagement.implementationJPA.service;
 
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -62,6 +63,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long id) {
         final Order order = getByIdInternal(id);
         if (order != null) {
@@ -75,6 +77,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderResponse addItem(Long orderId, AddItemToShoppingList addItemToShoppingList) {
 
         final long productId = addItemToShoppingList.getProductId();

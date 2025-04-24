@@ -78,9 +78,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse edit(long id, ProductEditRequest productRequest) {
-        final Product product = productRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+        final Product product = getByIdInternal(id);
 
         product.setName(productRequest.getName());
         product.setDescription(productRequest.getDescription());
@@ -92,9 +90,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductAmountResponse updateAmount(long id, ProductAmountRequest amount) {
-        final Product product = productRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+        final Product product = getByIdInternal(id);
 
         final long newAmount = amount.getAmount() + product.getAmount();
         product.setAmount(newAmount);
@@ -105,9 +101,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductAmountResponse getAmount(long id) {
-        long amount = productRepository
-                .findById(id).orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"))
-                .getAmount();
+        long amount = getByIdInternal(id).getAmount();
 
         ProductAmountResponse response = new ProductAmountResponse();
         response.setAmount(amount);
@@ -116,8 +110,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean checkAmountNeeded(long id, long amountNeeded) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+        final Product product = getByIdInternal(id);
 
         if (amountNeeded <= product.getAmount()) {
             return true;
