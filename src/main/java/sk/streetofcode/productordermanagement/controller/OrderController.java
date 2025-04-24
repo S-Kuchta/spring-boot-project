@@ -4,8 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sk.streetofcode.productordermanagement.api.OrderService;
-import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
-import sk.streetofcode.productordermanagement.api.dto.response.order.OrderItemAddResponse;
+import sk.streetofcode.productordermanagement.api.dto.request.order.AddItemToShoppingList;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
 
 @RestController
@@ -35,8 +34,8 @@ public class OrderController {
     }
 
     @PostMapping("{orderId}/add")
-    public ResponseEntity<OrderResponse> addItem(@PathVariable Long orderId, @RequestBody OrderAddRequest orderAddRequest) {
-        return ResponseEntity.status(HttpStatus.OK).body(orderService.addItem(orderId, orderAddRequest));
+    public ResponseEntity<OrderResponse> addItem(@PathVariable Long orderId, @RequestBody AddItemToShoppingList addItemToShoppingList) {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.addItem(orderId, addItemToShoppingList));
     }
 
     @PostMapping("{orderId}/pay")

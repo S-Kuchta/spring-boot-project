@@ -1,6 +1,6 @@
 package sk.streetofcode.productordermanagement.implementationJPA.service;
 
-import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -8,19 +8,17 @@ import org.springframework.stereotype.Service;
 import sk.streetofcode.productordermanagement.api.OrderItemService;
 import sk.streetofcode.productordermanagement.api.OrderService;
 import sk.streetofcode.productordermanagement.api.ProductService;
-import sk.streetofcode.productordermanagement.api.dto.request.order.OrderAddRequest;
+import sk.streetofcode.productordermanagement.api.dto.request.order.AddItemToShoppingList;
 import sk.streetofcode.productordermanagement.api.dto.request.product.ProductAmountRequest;
 import sk.streetofcode.productordermanagement.api.dto.response.order.OrderResponse;
 import sk.streetofcode.productordermanagement.api.dto.response.order.ShoppingListItemResponse;
 import sk.streetofcode.productordermanagement.api.exception.BadRequestException;
+import sk.streetofcode.productordermanagement.api.exception.InternalErrorException;
 import sk.streetofcode.productordermanagement.api.exception.ResourceNotFoundException;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Order;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.OrderItem;
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
-import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderItemRepository;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderRepository;
-
-import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -43,16 +41,16 @@ public class OrderServiceImpl implements OrderService {
         try {
             final Order newOrder = orderRepository.save(new Order());
 
-            return mapProductToProductResponse(newOrder);
+            return mapToOrderResponse(newOrder);
         } catch (DataAccessException e) {
-            logger.error("Error while saving order", e);
-            throw new InternalError();
+            logger.error("Error while saving Order", e);
+            throw new InternalErrorException("Error while saving Order");
         }
     }
 
     @Override
     public OrderResponse getById(long id) {
-        return mapProductToProductResponse(getByIdInternal(id));
+        return mapToOrderResponse(getByIdInternal(id));
     }
 
     @Override
@@ -65,29 +63,25 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteById(long id) {
         final Order order = getByIdInternal(id);
-        if (order != null) {
-            if (order.isPaid()) {
-                throw new BadRequestException("Paid order can not be deleted.");
-            }
 
-            order.getShoppingList()
-                    .forEach(orderItem -> orderItem.getProduct()
-                            .setAmount(orderItem.getProduct().getAmount() + orderItem.getAmount())
-                    );
+        order.getShoppingList()
+                .forEach(orderItem -> orderItem.getProduct()
+                        .setAmount(orderItem.getProduct().getAmount() + orderItem.getAmount())
+                );
 
-            orderRepository.deleteById(id);
-        }
+        orderRepository.deleteById(id);
     }
 
     @Override
-    public OrderResponse addItem(Long orderId, OrderAddRequest orderAddRequest) {
+    @Transactional
+    public OrderResponse addItem(Long orderId, AddItemToShoppingList addItemToShoppingList) {
 
-        final long productId = orderAddRequest.getProductId();
-        long amount = orderAddRequest.getAmount();
+        final long productId = addItemToShoppingList.getProductId();
+        long amount = addItemToShoppingList.getAmount();
 
         final Order order = getByIdInternal(orderId);
         if (order.isPaid()) {
-            throw new BadRequestException("Order with id " + orderId + " is already paid");
+            throw new BadRequestException("Order with id " + orderId + " is already paid!");
         }
 
         final Product product = productService.getByIdInternal(productId);
@@ -103,12 +97,12 @@ public class OrderServiceImpl implements OrderService {
             orderItemService.save(orderItem);
         }
 
-        return mapProductToProductResponse(order);
+        return mapToOrderResponse(order);
     }
 
     @Override
     public String payOrder(Long orderId) {
-        Order order = getByIdInternal(orderId);
+        final Order order = getByIdInternal(orderId);
 
         double sum = 0;
         for (OrderItem orderItem : order.getShoppingList()) {
@@ -127,20 +121,16 @@ public class OrderServiceImpl implements OrderService {
         return String.format("%.1f", sum);
     }
 
-    private OrderResponse mapProductToProductResponse(Order order) {
+    private OrderResponse mapToOrderResponse(Order order) {
         return new OrderResponse(
                 order.getId(),
-                mapOrderItemsToShoppingListResponse(order.getShoppingList()),
+                order.getShoppingList().stream()
+                        .map(item -> new ShoppingListItemResponse(
+                                item.getProduct().getId(),
+                                item.getAmount()
+                        )).toList(),
                 order.isPaid()
         );
     }
 
-    private List<ShoppingListItemResponse> mapOrderItemsToShoppingListResponse(List<OrderItem> orderItems) {
-        return orderItems
-                .stream()
-                .map(orderItem -> new ShoppingListItemResponse(
-                        orderItem.getProduct().getId(),
-                        orderItem.getAmount()))
-                .toList();
-    }
 }

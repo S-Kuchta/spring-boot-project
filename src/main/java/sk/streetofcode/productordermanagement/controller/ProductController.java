@@ -42,8 +42,8 @@ public class ProductController {
             @PathVariable("id") long id,
             @RequestBody ProductEditRequest product
     ) {
-        productService.edit(id, product);
-        return ResponseEntity.ok().body(productService.getById(id));
+
+        return ResponseEntity.status(HttpStatus.OK).body(productService.edit(id, product));
     }
 
     @PostMapping("{id}/amount")
@@ -64,7 +64,6 @@ public class ProductController {
     @DeleteMapping("{id}")
     public ResponseEntity<Void> deleteById(@PathVariable("id") long id) {
         productService.delete(id);
-//        return ResponseEntity.ok().body(productService.get(id));
         return ResponseEntity.ok().build();
     }
 }
