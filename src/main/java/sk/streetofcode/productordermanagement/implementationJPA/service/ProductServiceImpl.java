@@ -49,13 +49,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse save(ProductAddRequest product) {
+    public ProductResponse save(ProductAddRequest productAddRequest) {
         try {
             final Product newProduct = productRepository.save(new Product(
-                    product.getName(),
-                    product.getDescription(),
-                    product.getAmount(),
-                    product.getPrice()
+                    productAddRequest.getName(),
+                    productAddRequest.getDescription(),
+                    productAddRequest.getAmount(),
+                    productAddRequest.getPrice()
             ));
 
             return new ProductResponse(newProduct.getId(),

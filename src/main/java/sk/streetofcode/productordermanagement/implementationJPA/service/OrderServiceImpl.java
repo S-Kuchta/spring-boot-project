@@ -20,8 +20,6 @@ import sk.streetofcode.productordermanagement.implementationJPA.entity.OrderItem
 import sk.streetofcode.productordermanagement.implementationJPA.entity.Product;
 import sk.streetofcode.productordermanagement.implementationJPA.repository.OrderRepository;
 
-import java.util.List;
-
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -43,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             final Order newOrder = orderRepository.save(new Order());
 
-            return mapProductToProductResponse(newOrder);
+            return mapToOrderResponse(newOrder);
         } catch (DataAccessException e) {
             logger.error("Error while saving Order", e);
             throw new InternalErrorException("Error while saving Order");
@@ -52,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getById(long id) {
-        return mapProductToProductResponse(getByIdInternal(id));
+        return mapToOrderResponse(getByIdInternal(id));
     }
 
     @Override
@@ -63,17 +61,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
     public void deleteById(long id) {
         final Order order = getByIdInternal(id);
-        if (order != null) {
-            order.getShoppingList()
-                    .forEach(orderItem -> orderItem.getProduct()
-                            .setAmount(orderItem.getProduct().getAmount() + orderItem.getAmount())
-                    );
 
-            orderRepository.deleteById(id);
-        }
+        order.getShoppingList()
+                .forEach(orderItem -> orderItem.getProduct()
+                        .setAmount(orderItem.getProduct().getAmount() + orderItem.getAmount())
+                );
+
+        orderRepository.deleteById(id);
     }
 
     @Override
@@ -101,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
             orderItemService.save(orderItem);
         }
 
-        return mapProductToProductResponse(order);
+        return mapToOrderResponse(order);
     }
 
     @Override
@@ -125,20 +121,16 @@ public class OrderServiceImpl implements OrderService {
         return String.format("%.1f", sum);
     }
 
-    private OrderResponse mapProductToProductResponse(Order order) {
+    private OrderResponse mapToOrderResponse(Order order) {
         return new OrderResponse(
                 order.getId(),
-                mapOrderItemsToShoppingListResponse(order.getShoppingList()),
+                order.getShoppingList().stream()
+                        .map(item -> new ShoppingListItemResponse(
+                                item.getProduct().getId(),
+                                item.getAmount()
+                        )).toList(),
                 order.isPaid()
         );
     }
 
-    private List<ShoppingListItemResponse> mapOrderItemsToShoppingListResponse(List<OrderItem> orderItems) {
-        return orderItems
-                .stream()
-                .map(orderItem -> new ShoppingListItemResponse(
-                        orderItem.getProduct().getId(),
-                        orderItem.getAmount()))
-                .toList();
-    }
 }
